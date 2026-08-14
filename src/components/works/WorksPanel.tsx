@@ -140,7 +140,7 @@ export default function WorksPanel() {
       </div>
 
       {/* Dedicated Middle Row: Centered Device Composition */}
-      <div className="w-full py-2 sm:py-4 flex items-center justify-center">
+      <div className="w-full flex-1 min-h-0 py-2 sm:py-3 flex items-center justify-center my-auto">
         <ProjectVisual
           laptopMockup={SUMBER_AGUNG_TRANS.laptopMockup}
           mobileMockup={SUMBER_AGUNG_TRANS.mobileMockup}

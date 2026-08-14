@@ -15,28 +15,28 @@ export default function ProjectVisual({
 }: ProjectVisualProps) {
   return (
     <div
-      className={`relative flex items-center justify-center gap-3 sm:gap-6 lg:gap-8 mx-auto w-full max-w-full ${className}`}
+      className={`relative flex items-center justify-center gap-2.5 sm:gap-5 lg:gap-8 mx-auto w-full h-full max-h-[160px] xs:max-h-[185px] sm:max-h-[260px] md:max-h-[320px] lg:max-h-[400px] ${className}`}
     >
       {/* Laptop Mockup Wrapper */}
-      <div className="relative w-[180px] xs:w-[210px] sm:w-[280px] lg:w-auto lg:h-full lg:max-h-[380px] shrink-0 z-10 works-animate-laptop">
+      <div className="relative h-full aspect-[3436/2076] max-w-[75%] shrink flex items-center justify-center z-10 works-animate-laptop">
         <Image
           src={laptopMockup}
           alt={`${title} dashboard laptop mockup`}
           width={3436}
           height={2076}
-          className="w-full h-auto lg:h-full lg:w-auto object-contain drop-shadow-md"
+          className="w-full h-full object-contain drop-shadow-md"
           priority
         />
       </div>
 
       {/* Smartphone Mockup Wrapper */}
-      <div className="relative w-[55px] xs:w-[65px] sm:w-[85px] lg:w-auto lg:h-full lg:max-h-[380px] shrink-0 z-20 works-animate-mobile">
+      <div className="relative h-full aspect-[604/1172] shrink-0 flex items-center justify-center z-20 works-animate-mobile">
         <Image
           src={mobileMockup}
           alt={`${title} mobile app mockup`}
           width={604}
           height={1172}
-          className="w-full h-auto lg:h-full lg:w-auto object-contain drop-shadow-lg"
+          className="w-full h-full object-contain drop-shadow-lg"
           priority
         />
       </div>
