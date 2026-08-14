@@ -1,26 +1,173 @@
 @import "tailwindcss";
 
+/*
+ * Portfolio Design System
+ * Source of truth: docs/DESIGN_SYSTEM.md
+ * Tailwind CSS v4 — configured via @theme inline
+ */
+
+/* -------------------------------------------------- */
+/* 1. Semantic CSS Custom Properties                  */
+/* -------------------------------------------------- */
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Background */
+  --color-page-background: #F1EFE9;
+
+  /* Text */
+  --color-text-primary: #1D242D;
+  --color-text-secondary: #546881;
+  --color-text-muted: #909DAD;
+
+  /* Accent */
+  --color-accent-primary: #2196F3;
+  --color-accent-hover: #1E89DD;
+  --color-accent-active: #176BAD;
+
+  /* Border */
+  --color-border-subtle: #B2BBC6;
+
+  /* Surfaces */
+  --color-surface-soft-blue: #E9F5FE;
+  --color-surface-dark-blue: #104A7B;
+  --color-text-light-secondary: #A5C2DE;
+
+  /*
+   * Page frame — soft pink outer border
+   * DESIGN_SYSTEM.md §10: value is FILL_FROM_FIGMA.
+   * Estimated warm rose from Figma screenshot until exact value confirmed.
+   */
+  --color-page-frame: #E8DDD5;
+
+  /* Layout tokens — 30px desktop, 24px tablet, 16px mobile */
+  --page-frame-width: 0px;
+  --page-padding-inline: 30px;
+  --page-padding-block: 28px;
+  --topbar-height: calc(var(--page-padding-block) + 36px);
+  --topbar-clearance: calc(var(--topbar-height) + 24px);
+  --project-card-max-width: 1380px;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
+@media (max-width: 1023px) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --page-padding-inline: 24px;
+    --page-padding-block: 20px;
   }
 }
 
+@media (max-width: 639px) {
+  :root {
+    --page-padding-inline: 16px;
+    --page-padding-block: 16px;
+  }
+}
+
+/* -------------------------------------------------- */
+/* 2. Tailwind v4 Theme Extension                     */
+/* -------------------------------------------------- */
+
+@theme inline {
+  /* Font family */
+  --font-cohabited: var(--font-cohabited);
+
+  /* Semantic colors — registered for Tailwind utilities */
+  --color-page-background: #F1EFE9;
+  --color-text-primary: #1D242D;
+  --color-text-secondary: #546881;
+  --color-text-muted: #909DAD;
+  --color-accent-primary: #2196F3;
+  --color-accent-hover: #1E89DD;
+  --color-accent-active: #176BAD;
+  --color-border-subtle: #B2BBC6;
+  --color-surface-soft-blue: #E9F5FE;
+  --color-page-frame: #E8DDD5;
+
+  /* Base palette */
+  --color-base-lighter: #B2BBC6;
+  --color-base-light-hover: #A3ADBB;
+  --color-base-light-active: #909DAD;
+  --color-base-normal: #546881;
+  --color-base-normal-hover: #47586E;
+  --color-base-normal-active: #3D4C5E;
+  --color-base-dark: #1D242D;
+  --color-base-dark-hover: #151A20;
+  --color-base-dark-active: #090B0E;
+
+  /* Typography scale — font sizes with line heights */
+  --font-size-xs: 12px;
+  --font-size-xs--line-height: 125%;
+  --font-size-sm: 14px;
+  --font-size-sm--line-height: 125%;
+  --font-size-base: 16px;
+  --font-size-base--line-height: 150%;
+  --font-size-lg: 18px;
+  --font-size-lg--line-height: 150%;
+  --font-size-xl: 20px;
+  --font-size-xl--line-height: 150%;
+  --font-size-2xl: 24px;
+  --font-size-2xl--line-height: 150%;
+  --font-size-3xl: 30px;
+  --font-size-3xl--line-height: 125%;
+  --font-size-4xl: 36px;
+  --font-size-4xl--line-height: 125%;
+  --font-size-5xl: 48px;
+  --font-size-5xl--line-height: 100%;
+  --font-size-6xl: 60px;
+  --font-size-6xl--line-height: 100%;
+  --font-size-7xl: 72px;
+  --font-size-7xl--line-height: 100%;
+  --font-size-8xl: 96px;
+  --font-size-8xl--line-height: 100%;
+  --font-size-9xl: 128px;
+  --font-size-9xl--line-height: 100%;
+
+  /* Spacing scale */
+  --spacing-1: 4px;
+  --spacing-2: 8px;
+  --spacing-3: 12px;
+  --spacing-4: 16px;
+  --spacing-5: 20px;
+  --spacing-6: 24px;
+  --spacing-8: 32px;
+  --spacing-10: 40px;
+  --spacing-12: 48px;
+  --spacing-16: 64px;
+  --spacing-20: 80px;
+  --spacing-24: 96px;
+}
+
+/* -------------------------------------------------- */
+/* 3. Base Styles                                     */
+/* -------------------------------------------------- */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  background-color: var(--color-page-background);
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-cohabited), Arial, Helvetica, sans-serif;
+  background-color: var(--color-page-background);
+  color: var(--color-text-primary);
+  min-height: 100vh;
+  min-height: 100dvh;
+  overflow-x: hidden;
+}
+
+/* Ensure all text is selectable */
+::selection {
+  background-color: var(--color-accent-primary);
+  color: white;
 }

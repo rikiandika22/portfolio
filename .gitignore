@@ -39,3 +39,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# ─── Design reference assets (local only, not used by the website) ───────────
+# These Figma exports, UI screenshots, and visual reference images were used
+# during development only. They are NOT served by the website at runtime.
+# They remain on disk and are excluded from version control intentionally.
+docs/references/
