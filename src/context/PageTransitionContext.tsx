@@ -53,6 +53,7 @@ const ROUTE_LABELS: Record<string, { number: string; label: string }> = {
   "/about": { number: "03/", label: "ABOUT" },
   "/contact": { number: "04/", label: "CONTACTS" },
   "/contacts": { number: "04/", label: "CONTACTS" },
+  "/credentials": { number: "05/", label: "CREDENTIALS" },
   "/projects/sumber-agung-trans": { number: "01/", label: "SUMBER AGUNG TRANS" },
   "/projects/32-bloc": { number: "02/", label: "32 BLOC" },
   "/projects/moneylog": { number: "03/", label: "MONEYLOG" },

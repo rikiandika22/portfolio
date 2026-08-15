@@ -24,7 +24,7 @@ export const SUMBER_AGUNG_TRANS: ProjectData = {
   route: "/projects/sumber-agung-trans",
   laptopMockup: "/images/projects/sumber_agung_trans/overview/dashboard_laptop.webp",
   mobileMockup: "/images/projects/sumber_agung_trans/overview/dashboard_mobile.webp",
-  thumbnail: "/images/projects/sumber_agung_trans/thumbnail.webp",
+  thumbnail: "/images/projects/sumber_agung_trans/thumbnail_v2.webp",
 };
 
 export const PERSONAL_PROJECTS: readonly ProjectIdentity[] = [

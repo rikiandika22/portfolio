@@ -44,7 +44,10 @@ export default function AboutDetailContactCTA() {
         style={{ paddingInline: "var(--page-padding-inline)" }}
       >
         {/* Center Display Headline: GOT AN IDEA? LET'S BRING IT TO LIFE (Balanced 2 lines) */}
-        <div className="mb-16 sm:mb-24 lg:mb-32 max-w-[1280px]">
+        <div
+          className="max-w-[1280px] w-full"
+          style={{ marginBottom: "clamp(56px, 10vh, 140px)" }}
+        >
           <h2
             className="font-bold uppercase tracking-tighter text-center"
             style={{
@@ -64,7 +67,7 @@ export default function AboutDetailContactCTA() {
         </div>
 
         {/* Back to Top Button with Upward Arrow & generous top separation */}
-        <div>
+        <div className="pt-2 sm:pt-4">
           <ContactCTAButton
             as="button"
             onClick={scrollToTop}

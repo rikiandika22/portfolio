@@ -5,6 +5,7 @@ import { gsap, useGSAP } from "@/lib/gsap";
 import ContactHeadline from "./ContactHeadline";
 import ContactCTAButton from "./ContactCTAButton";
 import BackControl from "./BackControl";
+import { ArrowRightIcon } from "@/components/icons/ArrowIcons";
 
 export default function ContactPanel() {
   const panelRef = useRef<HTMLDivElement>(null);
@@ -121,7 +122,9 @@ export default function ContactPanel() {
               className="text-[20px] font-normal leading-[1.5] max-w-[420px]"
               style={{ color: "var(--color-text-light-secondary, #A5C2DE)" }}
             >
-              <span className="font-semibold text-white mr-3 inline-block">( → )</span>
+              <span className="font-semibold text-white mr-3 inline-flex items-center gap-1">
+                ( <ArrowRightIcon className="inline-block w-4 h-4 text-white" /> )
+              </span>
               Have an idea, opportunity, or project in mind? Let’s start a conversation and turn it into something real.
             </p>
           </div>
@@ -161,7 +164,9 @@ export default function ContactPanel() {
                 className="text-xs sm:text-sm font-normal leading-relaxed max-w-[360px]"
                 style={{ color: "var(--color-text-light-secondary, #A5C2DE)" }}
               >
-                <span className="font-semibold text-white mr-1.5 inline-block">( → )</span>
+                <span className="font-semibold text-white mr-1.5 inline-flex items-center gap-0.5">
+                  ( <ArrowRightIcon className="inline-block w-3.5 h-3.5 text-white" /> )
+                </span>
                 Have an idea, opportunity, or project in mind? Let’s start a conversation and turn it into something real.
               </p>
             </div>

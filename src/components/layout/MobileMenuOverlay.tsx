@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useCallback } from "react";
 import { usePathname } from "next/navigation";
 import { usePageTransition, normalizePath } from "@/context/PageTransitionContext";
 import { socialLinks } from "@/data/socialLinks";
@@ -22,11 +22,13 @@ const NAV_ITEMS: NavItem[] = [
   { name: "HOME", href: "/", customLabel: "PORTFOLIO", customNumber: "01/" },
   { name: "WORKS", href: "/works", customLabel: "WORKS", customNumber: "02/" },
   { name: "ABOUT", href: "/about", customLabel: "ABOUT", customNumber: "03/" },
+  { name: "CREDENTIALS", href: "/credentials", customLabel: "CREDENTIALS", customNumber: "05/" },
   { name: "CONTACT", href: "/contact", customLabel: "CONTACTS", customNumber: "04/" },
 ];
 
 export default function MobileMenuOverlay({ isOpen, onClose }: MobileMenuOverlayProps) {
   const overlayRef = useRef<HTMLDivElement>(null);
+  const isClosingRef = useRef(false);
   const pathname = usePathname();
   const { requestTransition } = usePageTransition();
 
@@ -41,43 +43,112 @@ export default function MobileMenuOverlay({ isOpen, onClose }: MobileMenuOverlay
     }
   }, [isOpen]);
 
+  // Smooth animated close handler matching In animation
+  const handleAnimatedClose = useCallback(
+    (onCompleteCallback?: () => void) => {
+      if (isClosingRef.current) return;
+      isClosingRef.current = true;
+
+      const prefersReducedMotion = window.matchMedia(
+        "(prefers-reduced-motion: reduce)"
+      ).matches;
+
+      if (prefersReducedMotion || !overlayRef.current) {
+        isClosingRef.current = false;
+        onClose();
+        onCompleteCallback?.();
+        return;
+      }
+
+      const tl = gsap.timeline({
+        onComplete: () => {
+          isClosingRef.current = false;
+          onClose();
+          onCompleteCallback?.();
+        },
+      });
+
+      tl.to(".mobile-nav-item", {
+        opacity: 0,
+        y: -12,
+        duration: 0.26,
+        stagger: -0.025,
+        ease: "power2.inOut",
+      })
+        .to(
+          [".mobile-menu-header", ".mobile-menu-footer"],
+          {
+            opacity: 0,
+            duration: 0.22,
+            ease: "power2.inOut",
+          },
+          0
+        )
+        .to(
+          overlayRef.current,
+          {
+            opacity: 0,
+            y: -16,
+            duration: 0.32,
+            ease: "power3.inOut",
+          },
+          "-=0.12"
+        );
+    },
+    [onClose]
+  );
+
   // Keyboard Escape listener
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape" && isOpen) {
-        onClose();
+        handleAnimatedClose();
       }
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isOpen, onClose]);
+  }, [isOpen, handleAnimatedClose]);
 
-  // GSAP entrance / exit animation
+  // GSAP entrance animation on mount
   useEffect(() => {
-    if (!overlayRef.current) return;
+    if (!isOpen || !overlayRef.current) return;
 
     const prefersReducedMotion = window.matchMedia(
       "(prefers-reduced-motion: reduce)"
     ).matches;
 
-    if (isOpen) {
-      if (prefersReducedMotion) {
-        gsap.set(overlayRef.current, { opacity: 1 });
-        return;
-      }
+    if (prefersReducedMotion) {
+      gsap.set(overlayRef.current, { opacity: 1 });
+      gsap.set(".mobile-nav-item", { opacity: 1, y: 0 });
+      gsap.set([".mobile-menu-header", ".mobile-menu-footer"], { opacity: 1 });
+      return;
+    }
 
-      gsap.fromTo(
-        overlayRef.current,
-        { opacity: 0, y: -16 },
-        { opacity: 1, y: 0, duration: 0.35, ease: "power3.out" }
-      );
+    const tl = gsap.timeline();
 
-      gsap.fromTo(
+    tl.fromTo(
+      overlayRef.current,
+      { opacity: 0, y: -16 },
+      { opacity: 1, y: 0, duration: 0.35, ease: "power3.out" }
+    )
+      .fromTo(
+        [".mobile-menu-header", ".mobile-menu-footer"],
+        { opacity: 0 },
+        { opacity: 1, duration: 0.3, ease: "power2.out" },
+        0.05
+      )
+      .fromTo(
         ".mobile-nav-item",
         { opacity: 0, y: 16 },
-        { opacity: 1, y: 0, duration: 0.4, stagger: 0.06, ease: "power3.out", delay: 0.08 }
+        {
+          opacity: 1,
+          y: 0,
+          duration: 0.4,
+          stagger: 0.05,
+          ease: "power3.out",
+        },
+        0.08
       );
-    }
   }, [isOpen]);
 
   if (!isOpen) return null;
@@ -85,20 +156,21 @@ export default function MobileMenuOverlay({ isOpen, onClose }: MobileMenuOverlay
   const currentNormalized = normalizePath(pathname);
 
   const handleNavClick = (item: NavItem) => {
-    // If already on the same primary section, just close the menu
-    if (
+    const isSameRoute =
       (item.name === "HOME" && currentNormalized === "/") ||
       (item.name === "WORKS" && (currentNormalized === "/works" || pathname.startsWith("/projects/"))) ||
       (item.name === "ABOUT" && currentNormalized === "/about") ||
-      (item.name === "CONTACT" && (currentNormalized === "/contact" || currentNormalized === "/contacts"))
-    ) {
-      onClose();
+      (item.name === "CREDENTIALS" && currentNormalized === "/credentials") ||
+      (item.name === "CONTACT" && (currentNormalized === "/contact" || currentNormalized === "/contacts"));
+
+    if (isSameRoute) {
+      handleAnimatedClose();
       return;
     }
 
-    // Otherwise close menu and trigger the existing global page transition
-    onClose();
+    // Trigger page transition and smoothly close mobile overlay
     requestTransition(pathname, item.href, item.customLabel, item.customNumber);
+    handleAnimatedClose();
   };
 
   const isSelected = (item: NavItem) => {
@@ -110,6 +182,9 @@ export default function MobileMenuOverlay({ isOpen, onClose }: MobileMenuOverlay
     }
     if (item.name === "ABOUT") {
       return currentNormalized === "/about";
+    }
+    if (item.name === "CREDENTIALS") {
+      return currentNormalized === "/credentials";
     }
     if (item.name === "CONTACT") {
       return currentNormalized === "/contact" || currentNormalized === "/contacts";
@@ -133,14 +208,14 @@ export default function MobileMenuOverlay({ isOpen, onClose }: MobileMenuOverlay
       }}
     >
       {/* Menu Header: Riki Andika (Left) & Close (Right) */}
-      <div className="flex items-center justify-between w-full text-white z-10">
+      <div className="mobile-menu-header flex items-center justify-between w-full text-white z-10">
         <span className="text-xl font-bold tracking-tight text-white">
           Riki Andika
         </span>
 
         <button
           type="button"
-          onClick={onClose}
+          onClick={() => handleAnimatedClose()}
           aria-label="Close navigation menu"
           className="text-lg font-semibold text-white/90 hover:text-white transition-opacity cursor-pointer px-3 py-1.5 active:scale-95 z-20"
         >
@@ -149,7 +224,7 @@ export default function MobileMenuOverlay({ isOpen, onClose }: MobileMenuOverlay
       </div>
 
       {/* Large Navigation Links List */}
-      <nav className="my-auto flex flex-col gap-6 sm:gap-8 w-full z-10">
+      <nav className="my-auto flex flex-col gap-4 sm:gap-6 w-full z-10">
         {NAV_ITEMS.map((item) => {
           const active = isSelected(item);
           return (
@@ -157,7 +232,7 @@ export default function MobileMenuOverlay({ isOpen, onClose }: MobileMenuOverlay
               <button
                 type="button"
                 onClick={() => handleNavClick(item)}
-                className={`text-4xl sm:text-5xl font-bold uppercase tracking-tight text-left transition-colors duration-200 cursor-pointer ${
+                className={`text-3xl sm:text-4xl md:text-5xl font-bold uppercase tracking-tight text-left transition-colors duration-200 cursor-pointer ${
                   active
                     ? "text-[#4DABF5]"
                     : "text-white hover:text-[#4DABF5]"
@@ -184,7 +259,7 @@ export default function MobileMenuOverlay({ isOpen, onClose }: MobileMenuOverlay
       </nav>
 
       {/* Bottom Contact & Social Links Section */}
-      <div className="flex items-end justify-between w-full pt-6 border-t border-white/15 text-xs sm:text-sm z-10">
+      <div className="mobile-menu-footer flex items-end justify-between w-full pt-6 border-t border-white/15 text-xs sm:text-sm z-10">
         {/* Left: Email & Phone */}
         <div className="flex flex-col gap-1.5 text-white/80">
           <a

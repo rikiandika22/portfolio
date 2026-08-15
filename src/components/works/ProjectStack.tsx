@@ -47,9 +47,9 @@ export default function ProjectStack() {
       ).matches;
 
       const getHeaderOffset = () => {
-        if (window.innerWidth < 640) return 34;
-        if (window.innerWidth < 1024) return 40;
-        return 48;
+        if (window.innerWidth < 640) return 44;
+        if (window.innerWidth < 1024) return 52;
+        return 60;
       };
 
       const headerOffset = getHeaderOffset();
@@ -249,31 +249,29 @@ export default function ProjectStack() {
 
       <style>{`
         [data-project-stack-card] {
-          height: calc(100% - 96px);
-          min-height: 260px;
+          height: calc(100% - 120px);
+          min-height: 280px;
         }
 
         [data-project-card-spine] { padding-inline: 32px; }
-        [data-project-card-cover] { padding: 36px; }
+        [data-project-card-cover] { padding: 0px; }
 
         @media (max-width: 639px) {
           [data-project-stack-card] {
-            height: calc(100% - 68px);
-            min-height: 220px;
+            height: calc(100% - 88px);
+            min-height: 240px;
           }
 
           [data-project-card-spine] { padding-inline: 16px; }
-          [data-project-card-cover] { padding: 18px; }
         }
 
         @media (min-width: 640px) and (max-width: 1023px) {
           [data-project-stack-card] {
-            height: calc(100% - 80px);
-            min-height: 240px;
+            height: calc(100% - 104px);
+            min-height: 260px;
           }
 
           [data-project-card-spine] { padding-inline: 24px; }
-          [data-project-card-cover] { padding: 28px; }
         }
       `}</style>
     </div>

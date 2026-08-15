@@ -46,6 +46,14 @@
   --topbar-height: calc(var(--page-padding-block) + 36px);
   --topbar-clearance: calc(var(--topbar-height) + 24px);
   --project-card-max-width: 1380px;
+
+  /* Credentials Page Editorial Spacing Tokens */
+  --credential-header-gap: clamp(24px, 2.5vw, 36px);
+  --credential-section-gap: clamp(36px, 3.5vw, 52px);
+  --credential-entry-gap: clamp(14px, 1.5vw, 20px);
+  --credential-featured-gap: clamp(80px, 7.5vw, 112px);
+  --credential-major-gap: clamp(120px, 10vw, 168px);
+  --credential-bottom-space: clamp(80px, 7vw, 120px);
 }
 
 @media (max-width: 1023px) {
@@ -131,9 +139,18 @@
   --spacing-8: 32px;
   --spacing-10: 40px;
   --spacing-12: 48px;
+  --spacing-14: 56px;
   --spacing-16: 64px;
   --spacing-20: 80px;
   --spacing-24: 96px;
+  --spacing-28: 112px;
+  --spacing-32: 128px;
+  --spacing-36: 144px;
+  --spacing-40: 160px;
+  --spacing-44: 176px;
+  --spacing-48: 192px;
+  --spacing-56: 224px;
+  --spacing-64: 256px;
 }
 
 /* -------------------------------------------------- */

@@ -28,7 +28,7 @@ export default function AboutDetailHero() {
 
         {/* Profile Image Column (5 cols) */}
         <div className="lg:col-span-5 flex justify-center lg:justify-start">
-          <div className="relative w-full max-w-[420px] aspect-[3/4] overflow-hidden rounded-2xl border border-[rgba(29,36,45,0.08)] shadow-sm">
+          <div className="relative w-full max-w-[420px] aspect-[3/4] overflow-hidden border border-[rgba(29,36,45,0.08)] shadow-sm">
             <Image
               src="/images/profile/about-profile.webp"
               alt="Riki Andika Khusna Saputra portrait"

@@ -31,7 +31,7 @@ export default function PersistentNavigation() {
           </div>
 
           {/* Center — Desktop Navigation links */}
-          <ul className="hidden sm:flex justify-self-center items-center gap-8 text-white">
+          <ul className="hidden sm:flex justify-self-center items-center gap-6 lg:gap-8 text-white">
             <li>
               <TransitionLink
                 href="/works"
@@ -50,6 +50,16 @@ export default function PersistentNavigation() {
                 className="text-2xl font-semibold leading-[1.5] tracking-normal text-white transition-opacity duration-200 hover:opacity-70"
               >
                 About
+              </TransitionLink>
+            </li>
+            <li>
+              <TransitionLink
+                href="/credentials"
+                customNumber="05/"
+                customLabel="CREDENTIALS"
+                className="text-2xl font-semibold leading-[1.5] tracking-normal text-white transition-opacity duration-200 hover:opacity-70"
+              >
+                Credentials
               </TransitionLink>
             </li>
             <li>

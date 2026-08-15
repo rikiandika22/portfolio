@@ -1,4 +1,5 @@
 import { socialLinks } from "@/data/socialLinks";
+import { ArrowUpRightIcon } from "@/components/icons/ArrowIcons";
 
 export default function ContactEditorialInfo() {
   return (
@@ -37,17 +38,12 @@ export default function ContactEditorialInfo() {
           </span>
           <a
             href="mailto:rkhusnasaputra@gmail.com"
-            className="group flex items-center gap-2 text-base sm:text-lg lg:text-xl font-medium text-text-primary hover:text-[#2196F3] transition-colors duration-200"
+            className="group flex items-center gap-1.5 text-base sm:text-lg lg:text-xl font-medium text-text-primary hover:text-[#2196F3] transition-colors duration-200"
           >
             <span className="border-b border-text-primary/30 group-hover:border-[#2196F3] transition-colors pb-0.5">
               rkhusnasaputra@gmail.com
             </span>
-            <span
-              className="text-sm opacity-60 group-hover:opacity-100 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all duration-200"
-              aria-hidden="true"
-            >
-              ↗
-            </span>
+            <ArrowUpRightIcon className="w-4 h-4 opacity-60 group-hover:opacity-100 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all duration-200" />
           </a>
         </div>
 
@@ -58,17 +54,12 @@ export default function ContactEditorialInfo() {
           </span>
           <a
             href="tel:+62895412506326"
-            className="group flex items-center gap-2 text-base sm:text-lg lg:text-xl font-medium text-text-primary hover:text-[#2196F3] transition-colors duration-200"
+            className="group flex items-center gap-1.5 text-base sm:text-lg lg:text-xl font-medium text-text-primary hover:text-[#2196F3] transition-colors duration-200"
           >
             <span className="border-b border-text-primary/30 group-hover:border-[#2196F3] transition-colors pb-0.5">
               +62 895-4125-06326
             </span>
-            <span
-              className="text-sm opacity-60 group-hover:opacity-100 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all duration-200"
-              aria-hidden="true"
-            >
-              ↗
-            </span>
+            <ArrowUpRightIcon className="w-4 h-4 opacity-60 group-hover:opacity-100 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all duration-200" />
           </a>
         </div>
 
@@ -86,17 +77,12 @@ export default function ContactEditorialInfo() {
                   href={link.href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="group flex items-center gap-1.5 text-sm sm:text-base font-semibold text-text-primary hover:text-[#2196F3] transition-colors duration-200"
+                  className="group flex items-center gap-1 text-sm sm:text-base font-semibold text-text-primary hover:text-[#2196F3] transition-colors duration-200"
                 >
                   <span className="border-b border-text-primary/30 group-hover:border-[#2196F3] transition-colors pb-0.5">
                     {link.label}
                   </span>
-                  <span
-                    className="text-xs opacity-60 group-hover:opacity-100 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all duration-200"
-                    aria-hidden="true"
-                  >
-                    ↗
-                  </span>
+                  <ArrowUpRightIcon className="w-3.5 h-3.5 opacity-60 group-hover:opacity-100 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all duration-200" />
                 </a>
               ))}
           </div>
