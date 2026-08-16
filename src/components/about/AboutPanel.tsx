@@ -23,12 +23,15 @@ export default function AboutPanel() {
         ".about-animate-cta",
       ];
 
-      if (prefersReducedMotion) {
+      const isDesktop =
+        window.innerWidth >= 1024 && !window.matchMedia("(pointer: coarse)").matches;
+
+      if (!isDesktop || prefersReducedMotion) {
         gsap.set(animatedElements, { opacity: 1, y: 0, yPercent: 0 });
         return;
       }
 
-      // Initial setup for GSAP reveal
+      // Initial setup for GSAP reveal (Desktop only)
       gsap.set(".about-animate-num", { opacity: 0, y: -8 });
       gsap.set(".about-animate-statement", { opacity: 0, y: 16 });
       gsap.set(".about-headline-line", { yPercent: 110 });
@@ -90,7 +93,7 @@ export default function AboutPanel() {
   return (
     <div
       ref={panelRef}
-      className="w-full h-full flex flex-col justify-between pt-1 pb-2 sm:pb-4 px-2 sm:px-4 box-border overflow-hidden bg-page-background"
+      className="w-full h-auto flex flex-col justify-between gap-y-8 lg:gap-y-0 lg:h-full pt-1 pb-2 sm:pb-4 px-2 sm:px-4 box-border overflow-hidden bg-page-background"
       style={{ background: "var(--color-page-background, #F1EFE9)" }}
     >
       {/* Top Left Area — Section Number 03/ */}

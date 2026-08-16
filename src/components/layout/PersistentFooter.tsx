@@ -4,6 +4,7 @@ import { forwardRef } from "react";
 import HorizontalProgress, {
   HorizontalProgressRef,
 } from "@/components/horizontal/HorizontalProgress";
+import ProximityText from "./ProximityText";
 
 const PersistentFooter = forwardRef<HorizontalProgressRef>((_, ref) => {
   return (
@@ -16,25 +17,30 @@ const PersistentFooter = forwardRef<HorizontalProgressRef>((_, ref) => {
       }}
     >
       {/*
-       * Stable three-column grid:
-       * Desktop: 1fr auto 1fr with 20px typography
-       * Mobile: auto 1fr auto with responsive 10px-12px typography
+       * Stable layout:
+       * Desktop: 1fr auto 1fr three-column grid with center progress indicator
+       * Mobile: flex justify-between two-item layout (copyright on left, credit on right, slider hidden)
        */}
-      <div className="grid grid-cols-[auto_1fr_auto] sm:grid-cols-[1fr_auto_1fr] items-center gap-2 sm:gap-4 w-full text-white">
+      <div className="flex items-center justify-between lg:grid lg:grid-cols-[1fr_auto_1fr] gap-2 sm:gap-4 w-full text-white">
         {/* Left — Copyright */}
-        <span className="justify-self-start shrink-0 text-[10px] xs:text-xs sm:text-base lg:text-xl font-bold leading-none tracking-tight text-white whitespace-nowrap">
-          © 2026 Portfolio
-        </span>
+        <ProximityText
+          text="© 2026 Portfolio"
+          isFooter
+          className="justify-self-start shrink-0 text-[10px] xs:text-xs sm:text-base lg:text-xl font-bold leading-none tracking-tight text-white whitespace-nowrap"
+        />
 
-        {/* Center — Horizontal Progress Indicator */}
-        <div className="justify-self-center flex items-center justify-center">
+        {/* Center — Horizontal Progress Indicator (Desktop only) */}
+        <div className="justify-self-center hidden lg:flex items-center justify-center">
           <HorizontalProgress ref={ref} />
         </div>
 
         {/* Right — Credit */}
-        <span className="justify-self-end shrink-0 text-[10px] xs:text-xs sm:text-base lg:text-xl font-bold leading-none tracking-tight text-white whitespace-nowrap text-right">
-          Design &amp; Code by Riki Andika
-        </span>
+        <ProximityText
+          text="Design & Code by Riki Andika"
+          isFooter
+          enableAmbientLoop
+          className="justify-self-end shrink-0 text-[10px] xs:text-xs sm:text-base lg:text-xl font-bold leading-none tracking-tight text-white whitespace-nowrap text-right"
+        />
       </div>
     </footer>
   );

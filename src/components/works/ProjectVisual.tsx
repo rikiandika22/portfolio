@@ -15,7 +15,7 @@ export default function ProjectVisual({
 }: ProjectVisualProps) {
   return (
     <div
-      className={`relative flex items-center justify-center gap-2.5 sm:gap-5 lg:gap-8 mx-auto w-full h-full max-h-[160px] xs:max-h-[185px] sm:max-h-[260px] md:max-h-[320px] lg:max-h-[400px] ${className}`}
+      className={`relative flex items-center justify-center gap-2.5 sm:gap-5 lg:gap-8 mx-auto w-full h-[180px] sm:h-[240px] md:h-[300px] lg:h-full lg:max-h-[400px] ${className}`}
     >
       {/* Laptop Mockup Wrapper */}
       <div className="relative h-full aspect-[3436/2076] max-w-[75%] shrink flex items-center justify-center z-10 works-animate-laptop">

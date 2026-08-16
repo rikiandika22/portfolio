@@ -23,7 +23,14 @@ export default function HorizontalScroller({
       const scroller = scrollerRef.current;
       if (!scroller) return;
 
+      const checkIsDesktop = () =>
+        window.innerWidth >= 1024 && !window.matchMedia("(pointer: coarse)").matches;
+
+      let isDesktop = checkIsDesktop();
+
       const handleScroll = () => {
+        if (!isDesktop) return;
+
         const maxScroll = scroller.scrollWidth - scroller.clientWidth;
         if (maxScroll <= 0) return;
 
@@ -34,11 +41,20 @@ export default function HorizontalScroller({
         const worksPanel = document.getElementById("works");
         let currentStep = 1;
 
-        if (contactPanel && scroller.scrollLeft >= contactPanel.offsetLeft - scroller.clientWidth * 0.5) {
+        if (
+          contactPanel &&
+          scroller.scrollLeft >= contactPanel.offsetLeft - scroller.clientWidth * 0.5
+        ) {
           currentStep = 4;
-        } else if (aboutPanel && scroller.scrollLeft >= aboutPanel.offsetLeft - scroller.clientWidth * 0.5) {
+        } else if (
+          aboutPanel &&
+          scroller.scrollLeft >= aboutPanel.offsetLeft - scroller.clientWidth * 0.5
+        ) {
           currentStep = 3;
-        } else if (worksPanel && scroller.scrollLeft >= worksPanel.offsetLeft - scroller.clientWidth * 0.5) {
+        } else if (
+          worksPanel &&
+          scroller.scrollLeft >= worksPanel.offsetLeft - scroller.clientWidth * 0.5
+        ) {
           currentStep = 2;
         } else {
           currentStep = 1;
@@ -49,16 +65,11 @@ export default function HorizontalScroller({
         }
       };
 
-      scroller.addEventListener("scroll", handleScroll, { passive: true });
-      handleScroll();
-
-      // Instantly kill programmatic navigation animation when manual interaction starts
       const handleManualInteraction = () => {
-        killNavTween();
+        if (isDesktop) {
+          killNavTween();
+        }
       };
-
-      scroller.addEventListener("wheel", handleManualInteraction, { passive: true });
-      scroller.addEventListener("touchstart", handleManualInteraction, { passive: true });
 
       // Custom Mouse Pointer Dragging Implementation (Multiplier: 0.62)
       const DRAG_MULTIPLIER = 0.62;
@@ -71,6 +82,7 @@ export default function HorizontalScroller({
       let rafId: number | null = null;
 
       const handlePointerDown = (e: PointerEvent) => {
+        if (!isDesktop) return;
         // Only trigger custom drag for mouse primary button
         if (e.pointerType !== "mouse" || e.button !== 0) return;
 
@@ -85,7 +97,7 @@ export default function HorizontalScroller({
       };
 
       const handlePointerMove = (e: PointerEvent) => {
-        if (!isPointerDown) return;
+        if (!isDesktop || !isPointerDown) return;
 
         const dx = e.clientX - startX;
 
@@ -116,10 +128,31 @@ export default function HorizontalScroller({
         }
       };
 
+      const handleResize = () => {
+        const nextIsDesktop = checkIsDesktop();
+        if (isDesktop && !nextIsDesktop) {
+          // Switched from desktop to mobile: reset horizontal offset
+          scroller.scrollLeft = 0;
+        }
+        isDesktop = nextIsDesktop;
+        if (isDesktop) {
+          handleScroll();
+        }
+      };
+
+      scroller.addEventListener("scroll", handleScroll, { passive: true });
+      scroller.addEventListener("wheel", handleManualInteraction, { passive: true });
+      scroller.addEventListener("touchstart", handleManualInteraction, { passive: true });
+
       scroller.addEventListener("pointerdown", handlePointerDown);
       window.addEventListener("pointermove", handlePointerMove);
       window.addEventListener("pointerup", handlePointerUpOrCancel);
       window.addEventListener("pointercancel", handlePointerUpOrCancel);
+      window.addEventListener("resize", handleResize);
+
+      if (isDesktop) {
+        handleScroll();
+      }
 
       return () => {
         scroller.removeEventListener("scroll", handleScroll);
@@ -130,6 +163,7 @@ export default function HorizontalScroller({
         window.removeEventListener("pointermove", handlePointerMove);
         window.removeEventListener("pointerup", handlePointerUpOrCancel);
         window.removeEventListener("pointercancel", handlePointerUpOrCancel);
+        window.removeEventListener("resize", handleResize);
 
         if (rafId) cancelAnimationFrame(rafId);
         document.body.style.userSelect = "";
@@ -145,6 +179,8 @@ export default function HorizontalScroller({
     let frameId: number | null = null;
 
     const restoreHashPosition = () => {
+      const isDesktop =
+        window.innerWidth >= 1024 && !window.matchMedia("(pointer: coarse)").matches;
       const targetId = decodeURIComponent(window.location.hash.slice(1));
       if (!targetId) return;
 
@@ -154,8 +190,12 @@ export default function HorizontalScroller({
 
       frameId = requestAnimationFrame(() => {
         const targetPanel = document.getElementById(targetId);
-        if (targetPanel && scroller.contains(targetPanel)) {
+        if (!targetPanel) return;
+
+        if (isDesktop && scroller.contains(targetPanel)) {
           scroller.scrollLeft = targetPanel.offsetLeft;
+        } else {
+          targetPanel.scrollIntoView({ behavior: "smooth", block: "start" });
         }
         frameId = null;
       });
@@ -172,9 +212,13 @@ export default function HorizontalScroller({
     };
   }, []);
 
-  // Keyboard Navigation (ArrowRight, ArrowLeft, Home, End)
+  // Keyboard Navigation (ArrowRight, ArrowLeft, Home, End) — Desktop only
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      const isDesktop =
+        window.innerWidth >= 1024 && !window.matchMedia("(pointer: coarse)").matches;
+      if (!isDesktop) return;
+
       const activeEl = document.activeElement;
       if (
         activeEl &&
@@ -217,9 +261,9 @@ export default function HorizontalScroller({
     <div
       ref={scrollerRef}
       data-horizontal-scroller="true"
-      className="w-full h-full overflow-x-auto overflow-y-hidden overscroll-x-contain select-none [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+      className="w-full h-auto overflow-visible select-auto lg:h-full lg:overflow-x-auto lg:overflow-y-hidden lg:overscroll-x-contain lg:select-none lg:[scrollbar-width:none] lg:[-ms-overflow-style:none] lg:[&::-webkit-scrollbar]:hidden"
       tabIndex={0}
-      aria-label="Horizontal content scroller"
+      aria-label="Content scroller"
     >
       {children}
     </div>

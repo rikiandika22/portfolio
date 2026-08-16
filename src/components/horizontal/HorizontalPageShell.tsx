@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useCallback } from "react";
+import { useRef, useCallback, useEffect } from "react";
 import PersistentNavigation from "@/components/layout/PersistentNavigation";
 import PersistentFooter from "@/components/layout/PersistentFooter";
 import { HorizontalProgressRef } from "@/components/horizontal/HorizontalProgress";
@@ -92,10 +92,50 @@ export default function HorizontalPageShell() {
     []
   );
 
+  // Native Vertical Scroll Listener on Mobile (< 1024px) for Contact color transition
+  useEffect(() => {
+    const handleVerticalScroll = () => {
+      const isDesktop =
+        window.innerWidth >= 1024 && !window.matchMedia("(pointer: coarse)").matches;
+      if (isDesktop) return;
+
+      // Check contact section intersection for color synchronization
+      const contactPanel = document.getElementById("contacts");
+      if (contactPanel) {
+        const rect = contactPanel.getBoundingClientRect();
+        const contactTop = rect.top;
+        const triggerPoint = window.innerHeight * 0.4;
+
+        let navT = 0;
+        if (contactTop <= triggerPoint) {
+          navT = 1;
+        } else if (contactTop <= window.innerHeight) {
+          navT = (window.innerHeight - contactTop) / (window.innerHeight - triggerPoint);
+          navT = Math.max(0, Math.min(1, navT));
+        }
+
+        const root = document.documentElement;
+        root.style.setProperty("--nav-brand-color", interpolateHex("#1D242D", "#FFFFFF", navT));
+        root.style.setProperty("--footer-left-color", interpolateHex("#1D242D", "#FFFFFF", navT));
+        root.style.setProperty("--nav-center-color", interpolateHex("#546881", "#A5C2DE", navT));
+        root.style.setProperty("--footer-bar-color", interpolateHex("#1D242D", "#A5C2DE", navT));
+        root.style.setProperty("--nav-social-color", interpolateHex("#1D242D", "#FFFFFF", navT));
+        root.style.setProperty("--footer-right-color", interpolateHex("#1D242D", "#FFFFFF", navT));
+      }
+    };
+
+    window.addEventListener("scroll", handleVerticalScroll, { passive: true });
+    handleVerticalScroll();
+
+    return () => {
+      window.removeEventListener("scroll", handleVerticalScroll);
+    };
+  }, []);
+
   return (
     <div
       data-horizontal-page-shell
-      className="relative w-full h-screen h-[100dvh] overflow-hidden select-none"
+      className="relative w-full min-h-screen overflow-x-hidden select-auto lg:h-screen lg:h-[100dvh] lg:overflow-hidden lg:select-none"
     >
       {/* Layer 0: Global Dynamic Visual Background Layer (100% Viewport width & height, fixed inset-0) */}
       <div
@@ -107,7 +147,7 @@ export default function HorizontalPageShell() {
       {/* Persistent Stationary Header Navigation */}
       <PersistentNavigation />
 
-      {/* Native Horizontal Scroller */}
+      {/* Native Horizontal Scroller (Desktop) / Vertical Document Flow (Mobile) */}
       <HorizontalScroller onScrollProgress={handleScrollProgress}>
         <HorizontalTrack>
           {/* Panel 01 — Homepage Content */}
@@ -125,7 +165,7 @@ export default function HorizontalPageShell() {
             <AboutPanel />
           </HorizontalPanel>
 
-          {/* Unnumbered Bridge — Gradient Transition Panel (Opaque Horizontal Linear Gradient) */}
+          {/* Unnumbered Bridge — Gradient Transition Panel */}
           <GradientTransitionPanel />
 
           {/* Panel 05 — Contact Section (Opaque Flat Dark Blue Surface) */}
@@ -137,7 +177,6 @@ export default function HorizontalPageShell() {
 
       {/* Persistent Stationary Footer with Progress Bar */}
       <PersistentFooter ref={progressRef} />
-
     </div>
   );
 }

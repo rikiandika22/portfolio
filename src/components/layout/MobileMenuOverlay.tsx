@@ -156,6 +156,34 @@ export default function MobileMenuOverlay({ isOpen, onClose }: MobileMenuOverlay
   const currentNormalized = normalizePath(pathname);
 
   const handleNavClick = (item: NavItem) => {
+    // If we are currently on the mobile Homepage, scroll smoothly to the target section
+    if (currentNormalized === "/") {
+      if (item.name === "HOME") {
+        handleAnimatedClose(() => {
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        });
+        return;
+      }
+      if (item.name === "WORKS") {
+        handleAnimatedClose(() => {
+          document.getElementById("works")?.scrollIntoView({ behavior: "smooth", block: "start" });
+        });
+        return;
+      }
+      if (item.name === "ABOUT") {
+        handleAnimatedClose(() => {
+          document.getElementById("about")?.scrollIntoView({ behavior: "smooth", block: "start" });
+        });
+        return;
+      }
+      if (item.name === "CONTACT") {
+        handleAnimatedClose(() => {
+          document.getElementById("contacts")?.scrollIntoView({ behavior: "smooth", block: "start" });
+        });
+        return;
+      }
+    }
+
     const isSameRoute =
       (item.name === "HOME" && currentNormalized === "/") ||
       (item.name === "WORKS" && (currentNormalized === "/works" || pathname.startsWith("/projects/"))) ||

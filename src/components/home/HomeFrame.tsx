@@ -12,30 +12,29 @@ interface HomeFrameProps {
 export default function HomeFrame({ embedded = false }: HomeFrameProps) {
   if (embedded) {
     return (
-      <div className="w-full h-full flex flex-col justify-between pt-1 pb-2 sm:pb-4 px-2 sm:px-4 box-border overflow-hidden">
+      <div className="w-full h-full box-border overflow-hidden flex flex-col justify-between">
         {/* ========================================================= */}
         {/* DESKTOP COMPOSITION (lg: and above) — Preserved 100%       */}
         {/* ========================================================= */}
         <main className="hidden lg:grid lg:grid-cols-12 gap-x-5 gap-y-2 my-auto w-full items-start">
-          {/* Row 1: Section metadata (left top) + Hero headline (right top) */}
-          <div className="col-start-1 col-span-3 row-start-1 self-end home-animate-item pb-1">
+          {/* Left Column (Cols 1-4): Metadata introduction directly unified with large Name (24px-28px gap) */}
+          <div className="col-start-1 col-span-4 row-start-1 row-span-2 flex flex-col justify-end gap-y-6 lg:gap-y-7 self-end home-animate-item">
             <SectionMetadata />
+            <IdentityName />
           </div>
 
+          {/* Right Top (Cols 4-12): Headline */}
           <div className="col-start-4 col-span-9 row-start-1 self-start home-animate-item">
             <HeroHeadline />
           </div>
 
-          {/* Row 2: Identity name (left) + Portrait (center) + Intro (right) */}
-          <div className="col-start-1 col-span-4 row-start-2 self-start home-animate-item">
-            <IdentityName />
-          </div>
-
+          {/* Center (Cols 5-8): Portrait */}
           <div className="col-start-5 col-span-4 row-start-2 self-center flex items-center justify-center home-animate-item">
             <Portrait />
           </div>
 
-          <div className="col-start-9 col-span-4 row-start-2 self-start pt-4 home-animate-item">
+          {/* Right Bottom (Cols 8-12): Supporting Intro Paragraph with 32px-36px breathing room */}
+          <div className="col-start-8 col-span-5 row-start-2 self-start pt-8 lg:pt-9 home-animate-item flex justify-end">
             <IntroDescription />
           </div>
         </main>
@@ -43,7 +42,7 @@ export default function HomeFrame({ embedded = false }: HomeFrameProps) {
         {/* ========================================================= */}
         {/* DEDICATED MOBILE COMPOSITION (< lg) — No Overlaps, Zero Overflow */}
         {/* ========================================================= */}
-        <main className="lg:hidden flex flex-col justify-between h-full my-auto w-full gap-y-3 py-2">
+        <main className="lg:hidden flex flex-col justify-between w-full h-full my-auto gap-y-4 py-2">
           {/* Mobile Top Row: 01/ Metadata & Hero Headline */}
           <div className="flex flex-col gap-y-1.5 w-full home-animate-item">
             <div className="flex items-center gap-2">
@@ -58,7 +57,7 @@ export default function HomeFrame({ embedded = false }: HomeFrameProps) {
           </div>
 
           {/* Mobile Middle Row: Identity Name (Left) & Portrait (Right) side-by-side */}
-          <div className="grid grid-cols-2 gap-x-2 items-center w-full home-animate-item">
+          <div className="grid grid-cols-2 gap-x-2 items-center w-full home-animate-item my-auto">
             <div className="flex flex-col justify-center">
               <IdentityName />
             </div>
@@ -103,23 +102,20 @@ export default function HomeFrame({ embedded = false }: HomeFrameProps) {
           className="grid grid-cols-12 gap-x-5 my-2 items-start"
           style={{ gridTemplateRows: "auto 1fr" }}
         >
-          <div className="col-start-1 col-span-3 row-start-1 self-end home-animate-item pb-1">
+          <div className="col-start-1 col-span-4 row-start-1 row-span-2 flex flex-col justify-end gap-y-6 lg:gap-y-7 self-end home-animate-item">
             <SectionMetadata />
+            <IdentityName />
           </div>
 
           <div className="col-start-4 col-span-9 row-start-1 self-start home-animate-item">
             <HeroHeadline />
           </div>
 
-          <div className="col-start-1 col-span-4 row-start-2 self-start home-animate-item">
-            <IdentityName />
-          </div>
-
           <div className="col-start-5 col-span-4 row-start-2 self-center flex items-center justify-center home-animate-item">
             <Portrait />
           </div>
 
-          <div className="col-start-9 col-span-4 row-start-2 self-start pt-4 home-animate-item">
+          <div className="col-start-8 col-span-5 row-start-2 self-start pt-8 lg:pt-9 home-animate-item flex justify-end">
             <IntroDescription />
           </div>
         </main>

@@ -4,6 +4,7 @@ import { useState } from "react";
 import TransitionLink from "@/components/animation/TransitionLink";
 import NavbarBrand from "./NavbarBrand";
 import MobileMenuOverlay from "./MobileMenuOverlay";
+import ProximityText from "./ProximityText";
 import { socialLinks } from "@/data/socialLinks";
 
 export default function PersistentNavigation() {
@@ -24,14 +25,14 @@ export default function PersistentNavigation() {
          * Desktop: three-column grid (Brand, Center links, Social links)
          * Mobile: two-item layout (Brand on Left, Menu button on Right)
          */}
-        <nav className="flex sm:grid sm:grid-cols-[1fr_auto_1fr] items-center justify-between w-full text-white">
+        <nav className="flex lg:grid lg:grid-cols-[1fr_auto_1fr] items-center justify-between w-full text-white">
           {/* Left — Brand name with hover reveal */}
           <div className="justify-self-start text-white">
             <NavbarBrand />
           </div>
 
           {/* Center — Desktop Navigation links */}
-          <ul className="hidden sm:flex justify-self-center items-center gap-6 lg:gap-8 text-white">
+          <ul className="hidden lg:flex justify-self-center items-center gap-6 lg:gap-8 text-white">
             <li>
               <TransitionLink
                 href="/works"
@@ -39,7 +40,7 @@ export default function PersistentNavigation() {
                 customLabel="WORKS"
                 className="text-2xl font-semibold leading-[1.5] tracking-normal text-white transition-opacity duration-200 hover:opacity-70"
               >
-                Works
+                <ProximityText text="Works" />
               </TransitionLink>
             </li>
             <li>
@@ -49,7 +50,7 @@ export default function PersistentNavigation() {
                 customLabel="ABOUT"
                 className="text-2xl font-semibold leading-[1.5] tracking-normal text-white transition-opacity duration-200 hover:opacity-70"
               >
-                About
+                <ProximityText text="About" />
               </TransitionLink>
             </li>
             <li>
@@ -59,7 +60,7 @@ export default function PersistentNavigation() {
                 customLabel="CREDENTIALS"
                 className="text-2xl font-semibold leading-[1.5] tracking-normal text-white transition-opacity duration-200 hover:opacity-70"
               >
-                Credentials
+                <ProximityText text="Credentials" />
               </TransitionLink>
             </li>
             <li>
@@ -69,13 +70,13 @@ export default function PersistentNavigation() {
                 customLabel="CONTACTS"
                 className="text-2xl font-semibold leading-[1.5] tracking-normal text-white transition-opacity duration-200 hover:opacity-70"
               >
-                Contacts
+                <ProximityText text="Contacts" />
               </TransitionLink>
             </li>
           </ul>
 
           {/* Right — Desktop Social links */}
-          <ul className="hidden sm:flex justify-self-end items-center gap-6 text-white">
+          <ul className="hidden lg:flex justify-self-end items-center gap-6 text-white">
             {socialLinks.map((link) => (
               <li key={link.label}>
                 <a
@@ -84,14 +85,14 @@ export default function PersistentNavigation() {
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  {link.label}
+                  <ProximityText text={link.label} />
                 </a>
               </li>
             ))}
           </ul>
 
           {/* Mobile Right — Single Menu Button */}
-          <div className="sm:hidden flex items-center">
+          <div className="lg:hidden flex items-center">
             <button
               type="button"
               onClick={() => setIsMobileMenuOpen(true)}

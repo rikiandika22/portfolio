@@ -6,7 +6,7 @@ interface HorizontalTrackProps {
 
 export default function HorizontalTrack({ children }: HorizontalTrackProps) {
   return (
-    <div className="horizontal-track flex flex-nowrap w-max h-full">
+    <div className="horizontal-track flex flex-col w-full h-auto lg:flex-row lg:flex-nowrap lg:w-max lg:h-full">
       {children}
     </div>
   );

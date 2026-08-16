@@ -10,11 +10,16 @@ interface BackControlProps {
 export default function BackControl({ className = "" }: BackControlProps) {
   const handleClick = (e: React.MouseEvent<HTMLAnchorElement | HTMLButtonElement>) => {
     e.preventDefault();
+    const isDesktop =
+      window.innerWidth >= 1024 && !window.matchMedia("(pointer: coarse)").matches;
     const scroller = document.querySelector<HTMLElement>("[data-horizontal-scroller]");
 
-    if (scroller) {
-      // Scroll back to the very beginning — the Homepage panel
+    if (isDesktop && scroller) {
+      // Desktop: Scroll back to the very beginning — the Homepage panel
       animateToPanel(scroller, 0);
+    } else {
+      // Mobile: Scroll to top of vertical document
+      window.scrollTo({ top: 0, behavior: "smooth" });
     }
   };
 

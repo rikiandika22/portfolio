@@ -23,12 +23,15 @@ export default function ContactPanel() {
         ".contact-animate-back",
       ];
 
-      if (prefersReducedMotion) {
+      const isDesktop =
+        window.innerWidth >= 1024 && !window.matchMedia("(pointer: coarse)").matches;
+
+      if (!isDesktop || prefersReducedMotion) {
         gsap.set(animatedElements, { opacity: 1, y: 0, yPercent: 0 });
         return;
       }
 
-      // Initial setup for GSAP reveal
+      // Initial setup for GSAP reveal (Desktop only)
       gsap.set(".contact-headline-line", { yPercent: 110 });
       gsap.set(".contact-animate-copy", { opacity: 0, y: 16 });
       gsap.set(".contact-animate-links", { opacity: 0, y: 16 });
@@ -90,18 +93,18 @@ export default function ContactPanel() {
   return (
     <div
       ref={panelRef}
-      className="w-full h-full flex flex-col justify-between box-border overflow-hidden text-white m-0 p-0 border-0 outline-0 rounded-none select-none"
+      className="w-full h-full min-h-[100svh] flex flex-col justify-between box-border overflow-hidden text-white m-0 p-0 border-0 outline-0 rounded-none select-none"
       style={{
         background: "var(--color-surface-dark-blue, #104A7B)",
       }}
     >
       {/* Inner responsive layout wrapper owning content padding and full edge-to-edge alignment */}
       <div
-        className="w-full h-full flex flex-col justify-center lg:justify-between box-border overflow-hidden bg-transparent"
+        className="w-full h-full min-h-[100svh] flex flex-col justify-center lg:justify-between box-border overflow-hidden bg-transparent"
         style={{
           paddingInline: "var(--page-padding-inline)",
-          paddingTop: "calc(var(--page-padding-block) + 2.5rem)",
-          paddingBottom: "calc(var(--page-padding-block) + 2.5rem)",
+          paddingTop: "calc(var(--page-padding-block) + 3.5rem)",
+          paddingBottom: "calc(var(--page-padding-block) + 5.5rem)",
         }}
       >
         {/* Semantic Hidden Heading */}

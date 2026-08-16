@@ -1,14 +1,14 @@
 export default function IntroDescription() {
   return (
-    <div className="flex items-start gap-x-2.5 sm:gap-x-4 lg:grid lg:grid-cols-[32px_minmax(0,322px)] lg:gap-x-[20px] w-full">
+    <div className="flex items-start gap-x-3 sm:gap-x-3.5 lg:gap-x-4 max-w-[370px] w-full">
       {/* Introduction Arrow */}
       <svg
-        width="32"
-        height="32"
+        width="28"
+        height="28"
         viewBox="0 0 32 32"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
-        className="w-5 h-5 sm:w-6 sm:h-6 lg:w-[32px] lg:h-[32px] text-base-dark shrink-0 mt-0.5"
+        className="w-5 h-5 sm:w-6 sm:h-6 lg:w-[28px] lg:h-[28px] text-base-dark shrink-0 mt-0.5"
         aria-hidden="true"
       >
         <path

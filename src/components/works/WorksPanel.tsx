@@ -28,12 +28,15 @@ export default function WorksPanel() {
         ".works-animate-cta",
       ];
 
-      if (prefersReducedMotion) {
+      const isDesktop =
+        window.innerWidth >= 1024 && !window.matchMedia("(pointer: coarse)").matches;
+
+      if (!isDesktop || prefersReducedMotion) {
         gsap.set(animatedElements, { opacity: 1, y: 0, scale: 1, yPercent: 0 });
         return;
       }
 
-      // Initial setup for GSAP reveal
+      // Initial setup for GSAP reveal (Desktop only)
       gsap.set(".works-animate-num", { opacity: 0, y: -8 });
       gsap.set(".works-animate-title-text", { yPercent: 110 });
       gsap.set(".works-animate-laptop", { opacity: 0, y: 24, scale: 0.98 });
@@ -120,7 +123,7 @@ export default function WorksPanel() {
   return (
     <div
       ref={panelRef}
-      className="w-full h-full flex flex-col justify-between pt-1 pb-2 sm:pb-4 px-2 sm:px-4 box-border overflow-hidden"
+      className="w-full h-auto flex flex-col justify-between gap-y-6 sm:gap-y-8 lg:gap-y-0 lg:h-full pt-1 pb-2 sm:pb-4 px-2 sm:px-4 box-border overflow-hidden"
     >
       {/* Upper Grid Area: Section number (left) & Project title (center/right) */}
       <div className="flex items-center justify-between lg:grid lg:grid-cols-12 gap-x-5 items-start w-full">
@@ -140,7 +143,7 @@ export default function WorksPanel() {
       </div>
 
       {/* Dedicated Middle Row: Centered Device Composition */}
-      <div className="w-full flex-1 min-h-0 py-2 sm:py-3 flex items-center justify-center my-auto">
+      <div className="w-full lg:flex-1 min-h-0 py-2 sm:py-3 flex items-center justify-center my-auto">
         <ProjectVisual
           laptopMockup={SUMBER_AGUNG_TRANS.laptopMockup}
           mobileMockup={SUMBER_AGUNG_TRANS.mobileMockup}
@@ -149,7 +152,7 @@ export default function WorksPanel() {
       </div>
 
       {/* Lower Area: Category (left), Description (right) & See More CTA (center bottom) */}
-      <div className="flex flex-col gap-y-2 sm:gap-y-3 w-full pb-2">
+      <div className="flex flex-col gap-y-3 sm:gap-y-4 w-full pb-2">
         <ProjectSummary
           category={SUMBER_AGUNG_TRANS.subtitle}
           description={SUMBER_AGUNG_TRANS.description}
