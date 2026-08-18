@@ -12,6 +12,14 @@ interface TrailPoint {
   stretch: number;
   createdAt: number;
   lifetime: number;
+  seed: number;
+}
+
+interface TrailingNode {
+  x: number;
+  y: number;
+  radiusFactor: number;
+  lerpRate: number;
 }
 
 export default function Portrait() {
@@ -20,9 +28,26 @@ export default function Portrait() {
   const revealImgRef = useRef<HTMLImageElement | null>(null);
   const isImgLoadedRef = useRef(false);
 
-  const pointsRef = useRef<TrailPoint[]>([]);
-  const lastPosRef = useRef<{ x: number; y: number; time: number } | null>(null);
+  // Pointer & Physics State
+  const targetPosRef = useRef<{ x: number; y: number } | null>(null);
+  const centerPosRef = useRef<{ x: number; y: number } | null>(null);
+  const prevPosRef = useRef<{ x: number; y: number; time: number } | null>(null);
+  const lastTrailSpawnPosRef = useRef<{ x: number; y: number } | null>(null);
+
+  // Dynamic Secondary Trailing Nodes for organic liquid inertia
+  const trailingNodesRef = useRef<TrailingNode[]>([
+    { x: 0, y: 0, radiusFactor: 0.75, lerpRate: 0.28 },
+    { x: 0, y: 0, radiusFactor: 0.55, lerpRate: 0.22 },
+    { x: 0, y: 0, radiusFactor: 0.38, lerpRate: 0.18 },
+  ]);
+
+  // Trail Points Array
+  const trailPointsRef = useRef<TrailPoint[]>([]);
+
+  // Hover & Transition State
   const isHoveringRef = useRef(false);
+  const enterScaleRef = useRef(0);
+  const leaveOpacityRef = useRef(1);
   const animFrameIdRef = useRef<number | null>(null);
 
   useEffect(() => {
@@ -51,8 +76,8 @@ export default function Portrait() {
     const updateCanvasSize = () => {
       const rect = container.getBoundingClientRect();
       const dpr = Math.min(window.devicePixelRatio || 1, 2);
-      canvas.width = rect.width * dpr;
-      canvas.height = rect.height * dpr;
+      canvas.width = Math.round(rect.width * dpr);
+      canvas.height = Math.round(rect.height * dpr);
       ctx.setTransform(1, 0, 0, 1, 0, 0); // reset transform
       ctx.scale(dpr, dpr);
     };
@@ -60,15 +85,93 @@ export default function Portrait() {
     updateCanvasSize();
     window.addEventListener("resize", updateCanvasSize);
 
-    // Animation render loop
+    // Helper: Draw an organic liquid spline blob
+    const drawOrganicBlob = (
+      x: number,
+      y: number,
+      radius: number,
+      angle: number,
+      stretch: number,
+      time: number,
+      alpha: number,
+      seed: number
+    ) => {
+      if (alpha <= 0.005 || radius <= 2) return;
+
+      const numVertices = 16;
+      const pts: { x: number; y: number }[] = [];
+
+      const clampedStretch = Math.max(1.0, Math.min(1.35, stretch));
+      const perpStretch = 1 / Math.sqrt(clampedStretch);
+
+      // Generate harmonic undulating perimeter vertices
+      for (let k = 0; k < numVertices; k++) {
+        const phi = (Math.PI * 2 * k) / numVertices;
+        // Subtle harmonic waves (amplitude 2px to 5px)
+        const wave =
+          Math.sin(2 * phi + time * 1.8 + seed) * 3.5 +
+          Math.cos(3 * phi - time * 1.4 + seed * 1.2) * 2.2 +
+          Math.sin(5 * phi + time * 2.5 + seed * 0.7) * 1.2;
+
+        const vertexRadius = Math.max(4, radius + wave);
+        const u = vertexRadius * Math.cos(phi) * clampedStretch;
+        const v = vertexRadius * Math.sin(phi) * perpStretch;
+
+        // Rotate along motion vector and translate
+        const px = x + u * Math.cos(angle) - v * Math.sin(angle);
+        const py = y + u * Math.sin(angle) + v * Math.cos(angle);
+
+        pts.push({ x: px, y: py });
+      }
+
+      // Smooth spline interpolation through midpoints
+      const mid0 = {
+        x: (pts[numVertices - 1].x + pts[0].x) / 2,
+        y: (pts[numVertices - 1].y + pts[0].y) / 2,
+      };
+
+      ctx.beginPath();
+      ctx.moveTo(mid0.x, mid0.y);
+      for (let i = 0; i < numVertices; i++) {
+        const nextMid = {
+          x: (pts[i].x + pts[(i + 1) % numVertices].x) / 2,
+          y: (pts[i].y + pts[(i + 1) % numVertices].y) / 2,
+        };
+        ctx.quadraticCurveTo(pts[i].x, pts[i].y, nextMid.x, nextMid.y);
+      }
+      ctx.closePath();
+
+      // Soft feathered radial gradient fill
+      const maxGradientRadius = radius * clampedStretch * 1.1;
+      const grad = ctx.createRadialGradient(x, y, 0, x, y, maxGradientRadius);
+      grad.addColorStop(0, `rgba(0, 0, 0, ${alpha.toFixed(3)})`);
+      grad.addColorStop(0.45, `rgba(0, 0, 0, ${(alpha * 0.92).toFixed(3)})`);
+      grad.addColorStop(0.72, `rgba(0, 0, 0, ${(alpha * 0.6).toFixed(3)})`);
+      grad.addColorStop(0.9, `rgba(0, 0, 0, ${(alpha * 0.22).toFixed(3)})`);
+      grad.addColorStop(1, "rgba(0, 0, 0, 0)");
+
+      ctx.fillStyle = grad;
+      ctx.fill();
+    };
+
+    // Main animation render loop
     const render = () => {
       const now = performance.now();
       const rect = container.getBoundingClientRect();
       const width = rect.width;
       const height = rect.height;
 
-      // Filter living points
-      pointsRef.current = pointsRef.current.filter((p) => {
+      // Handle Enter scale interpolation (smooth expansion on pointer enter)
+      if (isHoveringRef.current) {
+        enterScaleRef.current += (1 - enterScaleRef.current) * 0.16;
+        leaveOpacityRef.current = 1;
+      } else {
+        // Handle Leave opacity fade out (smooth collapse on pointer leave)
+        leaveOpacityRef.current = Math.max(0, leaveOpacityRef.current - 0.035);
+      }
+
+      // Filter living trail points
+      trailPointsRef.current = trailPointsRef.current.filter((p) => {
         const elapsed = now - p.createdAt;
         return elapsed < p.lifetime;
       });
@@ -76,36 +179,134 @@ export default function Portrait() {
       // Clear previous canvas frame
       ctx.clearRect(0, 0, width, height);
 
-      if (pointsRef.current.length > 0 && revealImgRef.current && isImgLoadedRef.current) {
+      const hasActiveHover = isHoveringRef.current && centerPosRef.current !== null;
+      const hasLivingTrails = trailPointsRef.current.length > 0;
+      const effectiveAlpha = isHoveringRef.current ? 1 : leaveOpacityRef.current;
+
+      if ((hasActiveHover || hasLivingTrails) && effectiveAlpha > 0.005 && isImgLoadedRef.current && revealImgRef.current) {
         ctx.save();
 
-        // Step 1: Draw organic trail mask points
-        pointsRef.current.forEach((p) => {
+        const time = now * 0.002;
+
+        // Step 1: Draw historical trail points
+        trailPointsRef.current.forEach((p) => {
           const progress = (now - p.createdAt) / p.lifetime; // 0 to 1
-          // Smooth non-linear fade
-          const currentAlpha = p.alpha * Math.max(0, 1 - progress * progress);
-          const currentRadius = p.radius * (1 - progress * 0.2);
+          const trailAlpha = p.alpha * Math.max(0, 1 - progress * progress) * effectiveAlpha;
+          const trailRadius = p.radius * (1 - progress * 0.3);
 
-          if (currentAlpha <= 0.005) return;
-
-          ctx.save();
-          ctx.translate(p.x, p.y);
-          ctx.rotate(p.angle);
-          ctx.scale(p.stretch, 1 / p.stretch);
-
-          const grad = ctx.createRadialGradient(0, 0, 0, 0, 0, currentRadius);
-          grad.addColorStop(0, `rgba(0, 0, 0, ${currentAlpha.toFixed(3)})`);
-          grad.addColorStop(0.55, `rgba(0, 0, 0, ${(currentAlpha * 0.75).toFixed(3)})`);
-          grad.addColorStop(1, "rgba(0, 0, 0, 0)");
-
-          ctx.fillStyle = grad;
-          ctx.beginPath();
-          ctx.arc(0, 0, currentRadius, 0, Math.PI * 2);
-          ctx.fill();
-          ctx.restore();
+          drawOrganicBlob(
+            p.x,
+            p.y,
+            trailRadius,
+            p.angle,
+            p.stretch,
+            time,
+            trailAlpha,
+            p.seed
+          );
         });
 
-        // Step 2: Composite reveal portrait through the organic mask
+        // Step 2: Draw main liquid blob and trailing nodes if hovering
+        if (targetPosRef.current && centerPosRef.current) {
+          // Lerp center position towards target for fluid inertia
+          const lerpFactor = 0.2;
+          centerPosRef.current.x += (targetPosRef.current.x - centerPosRef.current.x) * lerpFactor;
+          centerPosRef.current.y += (targetPosRef.current.y - centerPosRef.current.y) * lerpFactor;
+
+          const cx = centerPosRef.current.x;
+          const cy = centerPosRef.current.y;
+
+          // Compute instantaneous velocity & direction
+          let vx = 0;
+          let vy = 0;
+          let speed = 0;
+
+          if (prevPosRef.current) {
+            const dt = Math.max(1, now - prevPosRef.current.time);
+            vx = (cx - prevPosRef.current.x) / dt;
+            vy = (cy - prevPosRef.current.y) / dt;
+            speed = Math.hypot(vx, vy) * 16;
+          }
+          prevPosRef.current = { x: cx, y: cy, time: now };
+
+          const motionAngle = Math.atan2(vy, vx);
+          const velocityStretch = 1 + Math.min(0.35, speed * 0.015);
+          const baseRadius = (76 + Math.min(16, speed * 0.28)) * enterScaleRef.current;
+
+          // Update and draw secondary trailing nodes (spring inertia)
+          let prevNodePos = { x: cx, y: cy };
+          trailingNodesRef.current.forEach((node, idx) => {
+            node.x += (prevNodePos.x - node.x) * node.lerpRate;
+            node.y += (prevNodePos.y - node.y) * node.lerpRate;
+            prevNodePos = { x: node.x, y: node.y };
+
+            const nodeRadius = baseRadius * node.radiusFactor;
+            const nodeAlpha = 0.9 * effectiveAlpha;
+
+            drawOrganicBlob(
+              node.x,
+              node.y,
+              nodeRadius,
+              motionAngle,
+              1 + (velocityStretch - 1) * 0.7,
+              time + idx * 0.8,
+              nodeAlpha,
+              idx * 3.7
+            );
+          });
+
+          // Draw main liquid blob at center position
+          drawOrganicBlob(
+            cx,
+            cy,
+            baseRadius,
+            motionAngle,
+            velocityStretch,
+            time,
+            1.0 * effectiveAlpha,
+            0
+          );
+
+          // Check distance threshold to spawn trail points
+          if (isHoveringRef.current) {
+            if (!lastTrailSpawnPosRef.current) {
+              lastTrailSpawnPosRef.current = { x: cx, y: cy };
+            } else {
+              const ddx = cx - lastTrailSpawnPosRef.current.x;
+              const ddy = cy - lastTrailSpawnPosRef.current.y;
+              const distSinceLast = Math.hypot(ddx, ddy);
+
+              const spawnDistanceThreshold = 16;
+              if (distSinceLast >= spawnDistanceThreshold) {
+                const steps = Math.min(4, Math.floor(distSinceLast / spawnDistanceThreshold));
+                for (let s = 1; s <= steps; s++) {
+                  const t = s / steps;
+                  const spawnX = lastTrailSpawnPosRef.current.x + ddx * t;
+                  const spawnY = lastTrailSpawnPosRef.current.y + ddy * t;
+
+                  if (trailPointsRef.current.length > 25) {
+                    trailPointsRef.current.shift();
+                  }
+
+                  trailPointsRef.current.push({
+                    x: spawnX,
+                    y: spawnY,
+                    radius: baseRadius * 0.7,
+                    alpha: 0.85,
+                    angle: motionAngle,
+                    stretch: Math.min(1.25, velocityStretch),
+                    createdAt: now,
+                    lifetime: 750, // ms
+                    seed: Math.random() * 10,
+                  });
+                }
+                lastTrailSpawnPosRef.current = { x: cx, y: cy };
+              }
+            }
+          }
+        }
+
+        // Step 3: Composite reveal portrait cleanly through the organic liquid mask
         ctx.globalCompositeOperation = "source-in";
 
         const revealImg = revealImgRef.current;
@@ -138,11 +339,20 @@ export default function Portrait() {
         ctx.restore();
       }
 
-      // Continue animation loop as long as hovering or points still alive
-      if (isHoveringRef.current || pointsRef.current.length > 0) {
+      // Continue animation loop if hovering, trails still alive, or leave transition active
+      if (isHoveringRef.current || trailPointsRef.current.length > 0 || leaveOpacityRef.current > 0.005) {
         animFrameIdRef.current = requestAnimationFrame(render);
       } else {
+        // Clean reset
+        ctx.clearRect(0, 0, width, height);
         animFrameIdRef.current = null;
+        targetPosRef.current = null;
+        centerPosRef.current = null;
+        prevPosRef.current = null;
+        lastTrailSpawnPosRef.current = null;
+        enterScaleRef.current = 0;
+        leaveOpacityRef.current = 1;
+        trailPointsRef.current = [];
       }
     };
 
@@ -152,70 +362,45 @@ export default function Portrait() {
       }
     };
 
-    const addTrailPoint = (x: number, y: number, vx: number, vy: number, speed: number) => {
-      const angle = Math.atan2(vy, vx);
-      // Subtle velocity deformation
-      const stretch = Math.min(1.3, Math.max(1.0, 1 + speed * 0.012));
-      const radius = Math.min(95, Math.max(65, 70 + speed * 0.25));
-      const lifetime = 750; // ms
-
-      pointsRef.current.push({
-        x,
-        y,
-        radius,
-        alpha: 1,
-        angle,
-        stretch,
-        createdAt: performance.now(),
-        lifetime,
-      });
-
-      startAnimationLoop();
-    };
-
     const handlePointerEnter = (e: PointerEvent) => {
       isHoveringRef.current = true;
+      enterScaleRef.current = 0.25; // start smaller and expand
+      leaveOpacityRef.current = 1;
+
       const rect = container.getBoundingClientRect();
       const x = e.clientX - rect.left;
       const y = e.clientY - rect.top;
-      lastPosRef.current = { x, y, time: performance.now() };
 
-      addTrailPoint(x, y, 0, 0, 0);
+      targetPosRef.current = { x, y };
+      centerPosRef.current = { x, y };
+      prevPosRef.current = { x, y, time: performance.now() };
+      lastTrailSpawnPosRef.current = { x, y };
+
+      // Initialize secondary trailing nodes at cursor entrance
+      trailingNodesRef.current.forEach((node) => {
+        node.x = x;
+        node.y = y;
+      });
+
+      startAnimationLoop();
     };
 
     const handlePointerMove = (e: PointerEvent) => {
       const rect = container.getBoundingClientRect();
       const x = e.clientX - rect.left;
       const y = e.clientY - rect.top;
-      const now = performance.now();
 
-      if (lastPosRef.current) {
-        const dx = x - lastPosRef.current.x;
-        const dy = y - lastPosRef.current.y;
-        const dt = Math.max(1, now - lastPosRef.current.time);
-        const dist = Math.hypot(dx, dy);
-        const speed = (dist / dt) * 16; // scaled velocity
+      targetPosRef.current = { x, y };
 
-        // Interpolate points for fast movements to ensure smooth organic brushing without gaps
-        const step = 8;
-        const numSteps = Math.max(1, Math.floor(dist / step));
-
-        for (let i = 1; i <= numSteps; i++) {
-          const t = i / numSteps;
-          const px = lastPosRef.current.x + dx * t;
-          const py = lastPosRef.current.y + dy * t;
-          addTrailPoint(px, py, dx, dy, speed);
-        }
-      } else {
-        addTrailPoint(x, y, 0, 0, 0);
+      if (!centerPosRef.current) {
+        centerPosRef.current = { x, y };
       }
 
-      lastPosRef.current = { x, y, time: now };
+      startAnimationLoop();
     };
 
     const handlePointerLeave = () => {
       isHoveringRef.current = false;
-      lastPosRef.current = null;
       startAnimationLoop();
     };
 
@@ -249,7 +434,7 @@ export default function Portrait() {
             src="/images/profile/profile_photo.webp"
             alt="Portrait of Riki Andika Khusna Saputra"
             width={240}
-            height={360}
+            height={429}
             className="block object-cover object-top w-full h-auto"
             priority
           />

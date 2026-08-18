@@ -93,10 +93,10 @@ export const SLIDE_02: ProjectSlideData = {
   rightDescription:
     "The mobile application guides customers through the reservation process, from selecting a vehicle and entering travel details to submitting payments and monitoring booking progress.",
   images: {
-    web: "/images/projects/reservation_operations/web.webp",
+    web: "/images/projects/sumber_agung_trans/reservation_operations/web.webp",
     webWidth: 3052,
     webHeight: 1696,
-    mobile: "/images/projects/reservation_operations/mobile.webp",
+    mobile: "/images/projects/sumber_agung_trans/reservation_operations/mobile.webp",
     mobileWidth: 848,
     mobileHeight: 1780,
   },

@@ -21,7 +21,7 @@ export default function AboutDetailPage() {
       <PersistentNavigation />
 
       <main className="w-full box-border">
-        {/* Main Content Container — Hero & Capabilities */}
+        {/* Hero Section Container */}
         <div
           className="mx-auto w-full max-w-[1380px] box-border"
           style={{
@@ -30,8 +30,10 @@ export default function AboutDetailPage() {
           }}
         >
           <AboutDetailHero />
-          <AboutDetailCapabilities />
         </div>
+
+        {/* Section 02/ Capabilities — Pinned Horizontal Scroll Sequence on Desktop */}
+        <AboutDetailCapabilities />
 
         {/* Full-Width Blue CTA Section — 100% Edge-to-Edge & Viewport-Dominant */}
         <AboutDetailContactCTA />

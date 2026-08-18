@@ -64,7 +64,7 @@ export const MONEYLOG_SLIDE_01: MoneyLogSlideData = {
   rightDescription:
     "The dashboard provides a clear summary of total income, total expenses, and current balance while keeping transaction records easy to review and manage. Each user has their own account and financial data, allowing personal transaction histories to remain organized and accessible across sessions.",
   image: {
-    src: "/images/projects/moneylog/moneylog-web.webp",
+    src: "/images/projects/moneylog/dashboard.webp",
     width: 4000,
     height: 2160,
   },
