@@ -237,13 +237,13 @@ export default function AboutCTA({
     fillTimelineRef.current = tl;
   };
 
-  const handlePointerEnter = (e: React.PointerEvent<HTMLElement>) => {
+  const handlePointerEnter = (e: React.PointerEvent<HTMLElement> | React.MouseEvent<HTMLElement>) => {
     const origin = getPointerOrigin(e);
     lastOriginRef.current = origin;
     playFillEntrance(origin);
   };
 
-  const handlePointerLeave = (e: React.PointerEvent<HTMLElement>) => {
+  const handlePointerLeave = (e: React.PointerEvent<HTMLElement> | React.MouseEvent<HTMLElement>) => {
     const origin = getPointerOrigin(e);
     lastOriginRef.current = origin;
     playFillExit();
@@ -289,7 +289,7 @@ export default function AboutCTA({
     let isNear = false;
 
     const handlePointerMove = (e: PointerEvent | MouseEvent) => {
-      if (e.pointerType === "touch") return;
+      if (e instanceof PointerEvent && e.pointerType === "touch") return;
 
       const rect = wrapper.getBoundingClientRect();
       if (rect.width === 0 || rect.height === 0) return;
@@ -364,10 +364,10 @@ export default function AboutCTA({
         href={href}
         customNumber="03/"
         customLabel="ABOUT"
-        onPointerEnter={handlePointerEnter}
-        onPointerLeave={handlePointerLeave}
-        onMouseEnter={handlePointerEnter}
-        onMouseLeave={handlePointerLeave}
+        onPointerEnter={handlePointerEnter as React.PointerEventHandler<HTMLAnchorElement>}
+        onPointerLeave={handlePointerLeave as React.PointerEventHandler<HTMLAnchorElement>}
+        onMouseEnter={handlePointerEnter as React.MouseEventHandler<HTMLAnchorElement>}
+        onMouseLeave={handlePointerLeave as React.MouseEventHandler<HTMLAnchorElement>}
         onFocus={handleFocus}
         onBlur={handleBlur}
         aria-label={`${label} details page`}

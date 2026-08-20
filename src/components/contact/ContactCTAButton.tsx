@@ -251,13 +251,13 @@ export default function ContactCTAButton({
     fillTimelineRef.current = tl;
   };
 
-  const handlePointerEnter = (e: React.PointerEvent<HTMLElement>) => {
+  const handlePointerEnter = (e: React.PointerEvent<HTMLElement> | React.MouseEvent<HTMLElement>) => {
     const origin = getPointerOrigin(e);
     lastOriginRef.current = origin;
     playFillEntrance(origin);
   };
 
-  const handlePointerLeave = (e: React.PointerEvent<HTMLElement>) => {
+  const handlePointerLeave = (e: React.PointerEvent<HTMLElement> | React.MouseEvent<HTMLElement>) => {
     const origin = getPointerOrigin(e);
     lastOriginRef.current = origin;
     playFillExit();
@@ -304,7 +304,7 @@ export default function ContactCTAButton({
     let isNear = false;
 
     const handlePointerMove = (e: PointerEvent | MouseEvent) => {
-      if (e.pointerType === "touch") return;
+      if (e instanceof PointerEvent && e.pointerType === "touch") return;
 
       const rect = wrapper.getBoundingClientRect();
       if (rect.width === 0 || rect.height === 0) return;
@@ -423,10 +423,10 @@ export default function ContactCTAButton({
   );
 
   const commonButtonProps = {
-    onPointerEnter: handlePointerEnter,
-    onPointerLeave: handlePointerLeave,
-    onMouseEnter: handlePointerEnter,
-    onMouseLeave: handlePointerLeave,
+    onPointerEnter: handlePointerEnter as React.PointerEventHandler<HTMLElement>,
+    onPointerLeave: handlePointerLeave as React.PointerEventHandler<HTMLElement>,
+    onMouseEnter: handlePointerEnter as React.MouseEventHandler<HTMLElement>,
+    onMouseLeave: handlePointerLeave as React.MouseEventHandler<HTMLElement>,
     onFocus: handleFocus,
     onBlur: handleBlur,
     "aria-label": ariaLabel,
@@ -449,7 +449,7 @@ export default function ContactCTAButton({
           ref={buttonRef as React.RefObject<HTMLButtonElement>}
           type="button"
           onClick={onClick as React.MouseEventHandler<HTMLButtonElement>}
-          {...commonButtonProps}
+          {...(commonButtonProps as React.HTMLAttributes<HTMLButtonElement>)}
         >
           {content}
         </button>
@@ -458,7 +458,7 @@ export default function ContactCTAButton({
           ref={buttonRef as React.RefObject<HTMLAnchorElement>}
           href={href}
           onClick={onClick as React.MouseEventHandler<HTMLAnchorElement>}
-          {...commonButtonProps}
+          {...(commonButtonProps as React.HTMLAttributes<HTMLAnchorElement>)}
         >
           {content}
         </a>
