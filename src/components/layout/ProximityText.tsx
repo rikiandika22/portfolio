@@ -233,56 +233,62 @@ export default function ProximityText({
       }
 
       const validChars = charRefs.current.filter((el): el is HTMLSpanElement => el !== null);
-      gsap.to(validChars, {
-        x: 0,
-        y: 0,
-        scaleX: 1,
-        scaleY: 1,
-        rotation: 0,
-        opacity: 1,
-        duration: 0.45,
-        stagger: 0.01,
-        ease: "power3.out",
-        overwrite: "auto",
-        onComplete: () => {
-          validChars.forEach((el) => {
-            el.style.transform = "";
-          });
+      if (validChars.length > 0) {
+        gsap.to(validChars, {
+          x: 0,
+          y: 0,
+          scaleX: 1,
+          scaleY: 1,
+          rotation: 0,
+          opacity: 1,
+          duration: 0.45,
+          stagger: 0.01,
+          ease: "power3.out",
+          overwrite: "auto",
+          onComplete: () => {
+            validChars.forEach((el) => {
+              el.style.transform = "";
+            });
 
-          // Resume ambient wave after 4.5 seconds of idle time following pointer leave
-          if (enableAmbientLoop) {
-            scheduleNextAmbientWave(4.5);
-          }
-        },
-      });
+            // Resume ambient wave after 4.5 seconds of idle time following pointer leave
+            if (enableAmbientLoop) {
+              scheduleNextAmbientWave(4.5);
+            }
+          },
+        });
+      }
     };
 
     const handleFocus = () => {
       const validChars = charRefs.current.filter((el): el is HTMLSpanElement => el !== null);
-      const liftAmount = isFooter ? -1.5 : -2.5;
-      gsap.to(validChars, {
-        y: liftAmount,
-        scaleX: effectiveMaxScaleX,
-        duration: 0.25,
-        stagger: 0.02,
-        ease: "power2.out",
-      });
+      if (validChars.length > 0) {
+        const liftAmount = isFooter ? -1.5 : -2.5;
+        gsap.to(validChars, {
+          y: liftAmount,
+          scaleX: effectiveMaxScaleX,
+          duration: 0.25,
+          stagger: 0.02,
+          ease: "power2.out",
+        });
+      }
     };
 
     const handleBlur = () => {
       const validChars = charRefs.current.filter((el): el is HTMLSpanElement => el !== null);
-      gsap.to(validChars, {
-        y: 0,
-        scaleX: 1,
-        scaleY: 1,
-        duration: 0.35,
-        ease: "power3.out",
-        onComplete: () => {
-          validChars.forEach((el) => {
-            el.style.transform = "";
-          });
-        },
-      });
+      if (validChars.length > 0) {
+        gsap.to(validChars, {
+          y: 0,
+          scaleX: 1,
+          scaleY: 1,
+          duration: 0.35,
+          ease: "power3.out",
+          onComplete: () => {
+            validChars.forEach((el) => {
+              el.style.transform = "";
+            });
+          },
+        });
+      }
     };
 
     container.addEventListener("pointerenter", handlePointerEnter);

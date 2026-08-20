@@ -1,18 +1,28 @@
 "use client";
 
-import { useRef, ReactNode } from "react";
+import { useRef, ReactNode, useEffect } from "react";
 import { gsap, useGSAP } from "@/lib/gsap";
 
-interface ContactCTAButtonProps {
+export interface ContactCTAButtonProps {
   children: ReactNode;
   activeChildren?: ReactNode;
-  onClick?: (e: React.MouseEvent<HTMLAnchorElement> | React.MouseEvent<HTMLButtonElement>) => void;
+  onClick?: (
+    e: React.MouseEvent<HTMLAnchorElement> | React.MouseEvent<HTMLButtonElement>
+  ) => void;
   href?: string;
   ariaLabel: string;
   className?: string;
   as?: "a" | "button";
 }
 
+/**
+ * ContactCTAButton — Dual-Layer Magnetic CTA Button.
+ * 1. Magnetic Layer (outer wrapper): Proximity-driven smooth 2D translation toward cursor via gsap.quickTo.
+ * 2. Fill Layer (inner button): Exact original pointer-origin ripple fill with active text & wave reveal.
+ * - Both interactions are completely isolated on separate DOM layers, preventing transform overwrites.
+ * - Infinitely repeatable magnetic proximity & fill hover cycles.
+ * - Touch devices & prefers-reduced-motion safely respected.
+ */
 export default function ContactCTAButton({
   children,
   activeChildren,
@@ -22,20 +32,26 @@ export default function ContactCTAButton({
   className = "",
   as = "a",
 }: ContactCTAButtonProps) {
-  const containerRef = useRef<HTMLAnchorElement & HTMLButtonElement>(null);
+  // Stable reference for geometry & magnetic movement
+  const magneticWrapperRef = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLAnchorElement & HTMLButtonElement>(null);
+
+  // Fill animation refs
   const fillRef = useRef<HTMLDivElement>(null);
   const waveRef = useRef<HTMLDivElement>(null);
   const labelBaseRef = useRef<HTMLSpanElement>(null);
   const labelActiveRef = useRef<HTMLSpanElement>(null);
 
-  const activeTimelineRef = useRef<gsap.core.Timeline | null>(null);
+  const fillTimelineRef = useRef<gsap.core.Timeline | null>(null);
   const lastOriginRef = useRef<{ x: number; y: number }>({ x: 50, y: 50 });
 
-  // Calculate pointer origin as percentages (0% - 100%) inside button
+  // ---------------------------------------------------------------------------
+  // 1. FILL HOVER ANIMATION (Original ripple fill inside button)
+  // ---------------------------------------------------------------------------
   const getPointerOrigin = (
     e: React.PointerEvent<HTMLElement> | React.MouseEvent<HTMLElement>
   ) => {
-    const rect = containerRef.current?.getBoundingClientRect();
+    const rect = buttonRef.current?.getBoundingClientRect();
     if (!rect || rect.width === 0 || rect.height === 0) return { x: 50, y: 50 };
 
     const x = Math.max(0, Math.min(100, ((e.clientX - rect.left) / rect.width) * 100));
@@ -43,11 +59,10 @@ export default function ContactCTAButton({
     return { x: Math.round(x), y: Math.round(y) };
   };
 
-  // Safely kill active timeline & active tweens
-  const killAndResetState = () => {
-    if (activeTimelineRef.current) {
-      activeTimelineRef.current.kill();
-      activeTimelineRef.current = null;
+  const killFillAnimations = () => {
+    if (fillTimelineRef.current) {
+      fillTimelineRef.current.kill();
+      fillTimelineRef.current = null;
     }
     if (fillRef.current) gsap.killTweensOf(fillRef.current);
     if (waveRef.current) gsap.killTweensOf(waveRef.current);
@@ -57,7 +72,6 @@ export default function ContactCTAButton({
 
   useGSAP(
     () => {
-      // Set clean initial state on mount
       if (fillRef.current && labelActiveRef.current) {
         gsap.set([fillRef.current, labelActiveRef.current], {
           clipPath: "circle(0% at 50% 50%)",
@@ -68,12 +82,11 @@ export default function ContactCTAButton({
         gsap.set(waveRef.current, { scale: 1, rotate: 0, opacity: 0 });
       }
     },
-    { scope: containerRef }
+    { scope: buttonRef }
   );
 
-  // Entrance animation starting from specific pointer origin
-  const playEntrance = (origin: { x: number; y: number }) => {
-    killAndResetState();
+  const playFillEntrance = (origin: { x: number; y: number }) => {
+    killFillAnimations();
 
     const fill = fillRef.current;
     const wave = waveRef.current;
@@ -94,7 +107,6 @@ export default function ContactCTAButton({
       return;
     }
 
-    // Set initial state for new entrance
     gsap.set([fill, activeText], {
       clipPath: initialClip,
       opacity: 1,
@@ -105,7 +117,6 @@ export default function ContactCTAButton({
 
     const tl = gsap.timeline({ overwrite: "auto" });
 
-    // Liquid expansion from pointer origin with text reveal
     tl.to(
       [fill, activeText],
       {
@@ -150,7 +161,6 @@ export default function ContactCTAButton({
       );
     }
 
-    // Settles smoothly into complete button bounds
     tl.to(
       [fill, activeText],
       {
@@ -161,12 +171,11 @@ export default function ContactCTAButton({
       0.65
     );
 
-    activeTimelineRef.current = tl;
+    fillTimelineRef.current = tl;
   };
 
-  // Exit animation collapsing back toward last pointer origin
-  const playExit = () => {
-    killAndResetState();
+  const playFillExit = () => {
+    killFillAnimations();
 
     const fill = fillRef.current;
     const wave = waveRef.current;
@@ -189,7 +198,6 @@ export default function ContactCTAButton({
     const tl = gsap.timeline({
       overwrite: "auto",
       onComplete: () => {
-        // Restore 100% clean entrance state
         gsap.set([fill, activeText], {
           clipPath: "circle(0% at 50% 50%)",
           opacity: 0,
@@ -200,7 +208,7 @@ export default function ContactCTAButton({
         if (baseText) {
           gsap.set(baseText, { y: 0 });
         }
-        activeTimelineRef.current = null;
+        fillTimelineRef.current = null;
       },
     });
 
@@ -240,32 +248,130 @@ export default function ContactCTAButton({
       );
     }
 
-    activeTimelineRef.current = tl;
+    fillTimelineRef.current = tl;
   };
 
-  // Pointer event handlers
   const handlePointerEnter = (e: React.PointerEvent<HTMLElement>) => {
     const origin = getPointerOrigin(e);
     lastOriginRef.current = origin;
-    playEntrance(origin);
+    playFillEntrance(origin);
   };
 
   const handlePointerLeave = (e: React.PointerEvent<HTMLElement>) => {
     const origin = getPointerOrigin(e);
     lastOriginRef.current = origin;
-    playExit();
+    playFillExit();
   };
 
   const handleFocus = () => {
-    const origin = { x: 50, y: 50 }; // Center origin for keyboard navigation
+    const origin = { x: 50, y: 50 };
     lastOriginRef.current = origin;
-    playEntrance(origin);
+    playFillEntrance(origin);
   };
 
   const handleBlur = () => {
-    playExit();
+    playFillExit();
   };
 
+  // ---------------------------------------------------------------------------
+  // 2. MAGNETIC PROXIMITY INTERACTION (Operates on outer magnetic wrapper)
+  // ---------------------------------------------------------------------------
+  useEffect(() => {
+    const wrapper = magneticWrapperRef.current;
+    if (!wrapper) return;
+
+    const isTouch = window.matchMedia("(pointer: coarse)").matches;
+    const prefersReducedMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)"
+    ).matches;
+
+    if (isTouch || prefersReducedMotion) return;
+
+    // Persistent quickTo setters — never destroyed or overwritten
+    const xTo = gsap.quickTo(wrapper, "x", {
+      duration: 0.35,
+      ease: "power3.out",
+    });
+    const yTo = gsap.quickTo(wrapper, "y", {
+      duration: 0.35,
+      ease: "power3.out",
+    });
+
+    const INFLUENCE_RADIUS = 120;
+    const MAX_X = 14;
+    const MAX_Y = 10;
+
+    let isNear = false;
+
+    const handlePointerMove = (e: PointerEvent | MouseEvent) => {
+      if (e.pointerType === "touch") return;
+
+      const rect = wrapper.getBoundingClientRect();
+      if (rect.width === 0 || rect.height === 0) return;
+
+      // Stable center of the button (discounting current transform for jitter-free tracking)
+      const currentX = (gsap.getProperty(wrapper, "x") as number) || 0;
+      const currentY = (gsap.getProperty(wrapper, "y") as number) || 0;
+
+      const canonicalCenterX = rect.left - currentX + rect.width / 2;
+      const canonicalCenterY = rect.top - currentY + rect.height / 2;
+
+      const deltaX = e.clientX - canonicalCenterX;
+      const deltaY = e.clientY - canonicalCenterY;
+      const distance = Math.hypot(deltaX, deltaY);
+
+      const halfDiagonal = Math.hypot(rect.width / 2, rect.height / 2);
+      const maxReach = halfDiagonal + INFLUENCE_RADIUS;
+
+      if (distance < maxReach) {
+        isNear = true;
+
+        const normalized = Math.max(0, 1 - distance / maxReach);
+        const strength = Math.pow(normalized, 1.75);
+
+        const targetX = (deltaX / maxReach) * MAX_X * strength * 2.4;
+        const targetY = (deltaY / maxReach) * MAX_Y * strength * 2.4;
+
+        const clampedX = Math.max(-MAX_X, Math.min(MAX_X, targetX));
+        const clampedY = Math.max(-MAX_Y, Math.min(MAX_Y, targetY));
+
+        xTo(clampedX);
+        yTo(clampedY);
+      } else if (isNear) {
+        isNear = false;
+        xTo(0);
+        yTo(0);
+      }
+    };
+
+    const handleWindowLeave = () => {
+      if (isNear) {
+        isNear = false;
+        xTo(0);
+        yTo(0);
+      }
+    };
+
+    window.addEventListener("pointermove", handlePointerMove, {
+      passive: true,
+    });
+    document.addEventListener("mouseleave", handleWindowLeave, {
+      passive: true,
+    });
+    window.addEventListener("blur", handleWindowLeave, { passive: true });
+
+    return () => {
+      window.removeEventListener("pointermove", handlePointerMove);
+      document.removeEventListener("mouseleave", handleWindowLeave);
+      window.removeEventListener("blur", handleWindowLeave);
+      xTo(0);
+      yTo(0);
+    };
+  }, []);
+
+  // ---------------------------------------------------------------------------
+  // 3. BUTTON CONTENT & DOM STRUCTURE
+  // ---------------------------------------------------------------------------
   const content = (
     <>
       {/* Base Light Text Layer */}
@@ -276,7 +382,7 @@ export default function ContactCTAButton({
         {children}
       </span>
 
-      {/* Animated Primary Accent Blue Fill Layer */}
+      {/* Animated Primary Accent Blue Fill Layer (Original Ripple) */}
       <div
         ref={fillRef}
         className="absolute inset-0 bg-accent-primary z-20 pointer-events-none overflow-hidden"
@@ -286,6 +392,7 @@ export default function ContactCTAButton({
           clipPath: "circle(0% at 50% 50%)",
           opacity: 0,
         }}
+        aria-hidden="true"
       >
         {/* Organic Wave Surface Element inside fill */}
         <div
@@ -298,7 +405,7 @@ export default function ContactCTAButton({
         />
       </div>
 
-      {/* Active Light Text Layer (Revealed in sync with blue liquid) */}
+      {/* Active Light Text Layer (Revealed in sync with blue liquid ripple) */}
       <span
         ref={labelActiveRef}
         className="absolute inset-0 z-30 flex items-center justify-center text-white font-semibold pointer-events-none flex items-center gap-4"
@@ -315,47 +422,47 @@ export default function ContactCTAButton({
     </>
   );
 
-  if (as === "button") {
-    return (
-      <button
-        ref={containerRef as React.RefObject<HTMLButtonElement>}
-        type="button"
-        onClick={onClick as React.MouseEventHandler<HTMLButtonElement>}
-        onPointerEnter={handlePointerEnter}
-        onPointerLeave={handlePointerLeave}
-        onFocus={handleFocus}
-        onBlur={handleBlur}
-        aria-label={ariaLabel}
-        className={`relative inline-flex items-center justify-center border-[1.5px] border-white/40 text-base sm:text-lg font-semibold tracking-normal overflow-hidden select-none cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 transition-shadow ${className}`}
-        style={{
-          borderRadius: "38px",
-          paddingInline: "42px",
-          paddingBlock: "21px",
-        }}
-      >
-        {content}
-      </button>
-    );
-  }
+  const commonButtonProps = {
+    onPointerEnter: handlePointerEnter,
+    onPointerLeave: handlePointerLeave,
+    onMouseEnter: handlePointerEnter,
+    onMouseLeave: handlePointerLeave,
+    onFocus: handleFocus,
+    onBlur: handleBlur,
+    "aria-label": ariaLabel,
+    className: `relative inline-flex items-center justify-center border-[1.5px] border-white/40 text-base sm:text-lg font-semibold tracking-normal overflow-hidden select-none cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 transition-shadow ${className}`,
+    style: {
+      borderRadius: "38px",
+      paddingInline: "42px",
+      paddingBlock: "21px",
+    },
+  };
 
   return (
-    <a
-      ref={containerRef as React.RefObject<HTMLAnchorElement>}
-      href={href}
-      onClick={onClick as React.MouseEventHandler<HTMLAnchorElement>}
-      onPointerEnter={handlePointerEnter}
-      onPointerLeave={handlePointerLeave}
-      onFocus={handleFocus}
-      onBlur={handleBlur}
-      aria-label={ariaLabel}
-      className={`relative inline-flex items-center justify-center border-[1.5px] border-white/40 text-base sm:text-lg font-semibold tracking-normal overflow-hidden select-none cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 transition-shadow ${className}`}
-      style={{
-        borderRadius: "38px",
-        paddingInline: "42px",
-        paddingBlock: "21px",
-      }}
+    <div
+      ref={magneticWrapperRef}
+      className="inline-block will-change-transform"
+      style={{ isolation: "isolate" }}
     >
-      {content}
-    </a>
+      {as === "button" ? (
+        <button
+          ref={buttonRef as React.RefObject<HTMLButtonElement>}
+          type="button"
+          onClick={onClick as React.MouseEventHandler<HTMLButtonElement>}
+          {...commonButtonProps}
+        >
+          {content}
+        </button>
+      ) : (
+        <a
+          ref={buttonRef as React.RefObject<HTMLAnchorElement>}
+          href={href}
+          onClick={onClick as React.MouseEventHandler<HTMLAnchorElement>}
+          {...commonButtonProps}
+        >
+          {content}
+        </a>
+      )}
+    </div>
   );
 }

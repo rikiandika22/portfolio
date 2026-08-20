@@ -32,11 +32,13 @@ export default function AboutDetailPage() {
           <AboutDetailHero />
         </div>
 
-        {/* Section 02/ Capabilities — Pinned Horizontal Scroll Sequence on Desktop */}
+        {/* Section 02/ Capabilities — Pinned Horizontal Scroll Sequence + Scroll-Driven CTA Reveal on Desktop */}
         <AboutDetailCapabilities />
 
-        {/* Full-Width Blue CTA Section — 100% Edge-to-Edge & Viewport-Dominant */}
-        <AboutDetailContactCTA />
+        {/* Mobile / Tablet Standalone CTA (< 1024px) in native vertical document flow */}
+        <div className="block lg:hidden">
+          <AboutDetailContactCTA />
+        </div>
       </main>
 
       <PersistentFooter />
